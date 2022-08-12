@@ -4,6 +4,8 @@ use std::simd::Simd;
 
 use std::time::Instant;
 
+pub mod matrix;
+
 type T = f32;
 
 pub fn myfunc(d: &mut [T], u: &[T], v: &[T]) {
