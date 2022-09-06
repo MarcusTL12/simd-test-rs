@@ -19,7 +19,6 @@ fn main() {
     let threads = if let Some(t) = args.next().and_then(|x| x.parse().ok()) {
         t
     } else {
-        // num_cpus::get();
         1
     };
 
@@ -33,8 +32,13 @@ fn main() {
 
     let t = Instant::now();
 
-    // let amt_done = do_n_colatz_threaded(&mut nums, &mut maxs, n_iter);
-    do_n_colatz_chunked(&mut nums, &mut maxs, n_iter);
+    // do_n_colatz(&mut nums, &mut maxs, n_iter);
+    if threads == 1 {
+        do_n_colatz_chunked(&mut nums, &mut maxs, n_iter);
+    } else {
+        do_n_colatz_threaded(&mut nums, &mut maxs, n_iter);
+    }
+
     let amt_done = get_amt_done(&nums);
 
     let t = t.elapsed();

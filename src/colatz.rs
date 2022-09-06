@@ -1,6 +1,6 @@
 use std::cmp::max;
 
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 pub type T = i64;
 
@@ -39,46 +39,44 @@ fn update_max_const<const N: usize>(is: &[T; N], maxs: &mut [T; N]) {
     }
 }
 
+fn do_n_colatz_const_chunk<const N: usize>(
+    is: &mut [T; N],
+    maxs: &mut [T; N],
+    n: usize,
+) {
+    for _ in 0..n {
+        do_colatz_const(is);
+        update_max_const(is, maxs);
+    }
+}
+
 pub fn do_n_colatz_chunked(is: &mut [T], maxs: &mut [T], n: usize) {
-    const CHUNK_SIZE: usize = 1024;
+    const CHUNK_SIZE: usize = 64;
 
     let is_c = is.array_chunks_mut::<CHUNK_SIZE>();
     let maxs_c = maxs.array_chunks_mut::<CHUNK_SIZE>();
 
     for (is, maxs) in is_c.zip(maxs_c) {
-        for _ in 0..n {
-            do_colatz_const(is);
-            update_max_const(is, maxs);
-        }
+        do_n_colatz_const_chunk(is, maxs, n);
     }
 
     let is_r = is.array_chunks_mut::<CHUNK_SIZE>().into_remainder();
     let maxs_r = maxs.array_chunks_mut::<CHUNK_SIZE>().into_remainder();
 
-    for _ in 0..n {
-        do_colatz(is_r);
-        update_max(is_r, maxs_r);
-    }
+    do_n_colatz(is_r, maxs_r, n);
 }
 
-// pub fn do_n_colatz_threaded(
-//     is: &mut [T],
-//     maxs: &mut [T],
-//     n: usize,
-// ) -> usize {
-//     // let chunk_size = is.len() / nth;
-//     const CHUNK_SIZE: usize = 1024;
+pub fn do_n_colatz_threaded(is: &mut [T], maxs: &mut [T], n: usize) {
+    const CHUNK_SIZE: usize = 64;
 
-//     let (is_c, is_r) = is.as_chunks_mut::<CHUNK_SIZE>();
-//     let (maxs_c, maxs_r) = maxs.as_chunks_mut::<CHUNK_SIZE>();
+    let (is_c, is_r) = is.as_chunks_mut::<CHUNK_SIZE>();
+    let (maxs_c, maxs_r) = maxs.as_chunks_mut::<CHUNK_SIZE>();
 
-//     is_c.par_iter_mut().zip_eq(maxs_c.par_iter_mut()).for_each(
-//         |(is_c, maxs_c)| {
-//             do_n_colatz(is_c, maxs_c, n);
-//         },
-//     );
+    is_c.par_iter_mut().zip_eq(maxs_c.par_iter_mut()).for_each(
+        |(is_c, maxs_c)| {
+            do_n_colatz_const_chunk(is_c, maxs_c, n);
+        },
+    );
 
-//     do_n_colatz(is_r, maxs_r, n);
-
-//     amt_done(is)
-// }
+    do_n_colatz(is_r, maxs_r, n);
+}
