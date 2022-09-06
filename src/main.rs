@@ -33,7 +33,9 @@ fn main() {
 
     let t = Instant::now();
 
-    let amt_done = do_n_colatz_threaded(&mut nums, &mut maxs, n_iter);
+    // let amt_done = do_n_colatz_threaded(&mut nums, &mut maxs, n_iter);
+    do_n_colatz_chunked(&mut nums, &mut maxs, n_iter);
+    let amt_done = get_amt_done(&nums);
 
     let t = t.elapsed();
 
