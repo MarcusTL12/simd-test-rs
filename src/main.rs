@@ -58,8 +58,8 @@ fn main() {
             let n_nums = args.next().unwrap().parse().unwrap();
 
             let t = Instant::now();
-            let v = rand_vec::<1000003, _, _>(n_nums, -100.0f32..100.0f32);
-            let w = rand_vec::<1000033, _, _>(n_nums, -100.0f32..100.0f32);
+            let v = rand_vec::<1000003, _, _>(n_nums, -100.0..100.0);
+            let w = rand_vec::<1000033, _, _>(n_nums, -100.0..100.0);
             let t = t.elapsed();
 
             println!("Took {t:?} to create rand vectors.");
