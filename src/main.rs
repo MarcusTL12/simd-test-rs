@@ -58,8 +58,8 @@ fn main() {
             let n_nums = args.next().unwrap().parse().unwrap();
 
             let t = Instant::now();
-            let v = rand_vec::<1000003, _, _>(n_nums, -100.0..100.0);
-            let w = rand_vec::<1000033, _, _>(n_nums, -100.0..100.0);
+            let v = rand_vec::<1000003, _, _>(n_nums, -100f64..100.0);
+            let w = rand_vec::<1000033, _, _>(n_nums, -100f64..100.0);
             let t = t.elapsed();
 
             println!("Took {t:?} to create rand vectors.");
@@ -69,7 +69,7 @@ fn main() {
                 let d = dot_naive(&v, &w);
                 let t = t.elapsed();
 
-                println!("Naive: {d} took {t:?}");
+                println!(" Naive: {d} took {t:?}");
             }
 
             {
@@ -77,7 +77,7 @@ fn main() {
                 let d = dot_chunked::<2, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("    2: {d} took {t:?}");
+                println!("     2: {d} took {t:?}");
             }
 
             {
@@ -85,7 +85,7 @@ fn main() {
                 let d = dot_chunked::<4, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("    4: {d} took {t:?}");
+                println!("     4: {d} took {t:?}");
             }
 
             {
@@ -93,7 +93,7 @@ fn main() {
                 let d = dot_chunked::<8, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("    8: {d} took {t:?}");
+                println!("     8: {d} took {t:?}");
             }
 
             {
@@ -101,7 +101,7 @@ fn main() {
                 let d = dot_chunked::<16, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("   16: {d} took {t:?}");
+                println!("    16: {d} took {t:?}");
             }
 
             {
@@ -109,7 +109,7 @@ fn main() {
                 let d = dot_chunked::<32, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("   32: {d} took {t:?}");
+                println!("    32: {d} took {t:?}");
             }
 
             {
@@ -117,7 +117,7 @@ fn main() {
                 let d = dot_chunked::<64, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("   64: {d} took {t:?}");
+                println!("    64: {d} took {t:?}");
             }
 
             {
@@ -125,7 +125,7 @@ fn main() {
                 let d = dot_chunked::<128, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("  128: {d} took {t:?}");
+                println!("   128: {d} took {t:?}");
             }
 
             {
@@ -133,7 +133,7 @@ fn main() {
                 let d = dot_chunked::<128, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("  128: {d} took {t:?}");
+                println!("   128: {d} took {t:?}");
             }
 
             {
@@ -141,7 +141,7 @@ fn main() {
                 let d = dot_chunked::<256, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!("  256: {d} took {t:?}");
+                println!("   256: {d} took {t:?}");
             }
 
             {
@@ -149,7 +149,15 @@ fn main() {
                 let d = dot_chunked::<1024, _>(&v, &w);
                 let t = t.elapsed();
 
-                println!(" 1024: {d} took {t:?}");
+                println!("  1024: {d} took {t:?}");
+            }
+
+            {
+                let t = Instant::now();
+                let d = dot_chunked::<8192, _>(&v, &w);
+                let t = t.elapsed();
+
+                println!("  8192: {d} took {t:?}");
             }
         }
         _ => {}
