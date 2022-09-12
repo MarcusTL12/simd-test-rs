@@ -2,11 +2,28 @@
 #![feature(portable_simd)]
 #![feature(array_chunks)]
 
-use std::time::Instant;
+use std::{env::Args, time::Instant};
 
 pub mod linalg;
 
 pub mod colatz;
+
+pub mod lennard_jones;
+
+fn set_threads(args: &mut Args) -> usize {
+    let threads = if let Some(t) = args.next().and_then(|x| x.parse().ok()) {
+        t
+    } else {
+        1
+    };
+
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(threads)
+        .build_global()
+        .unwrap_or(());
+
+    threads
+}
 
 fn main() {
     let mut args = std::env::args();
@@ -19,17 +36,7 @@ fn main() {
             let n_nums = args.next().unwrap().parse().unwrap();
             let n_iter = args.next().unwrap().parse().unwrap();
 
-            let threads =
-                if let Some(t) = args.next().and_then(|x| x.parse().ok()) {
-                    t
-                } else {
-                    1
-                };
-
-            rayon::ThreadPoolBuilder::new()
-                .num_threads(threads)
-                .build_global()
-                .unwrap_or(());
+            let threads = set_threads(&mut args);
 
             let mut nums: Vec<_> = (1..=n_nums as T).collect();
             let mut maxs = vec![0; n_nums];
@@ -159,6 +166,79 @@ fn main() {
 
                 println!("  8192: {d} took {t:?}");
             }
+        }
+        "lennard-jones" => {
+            use lennard_jones::*;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            let r = setup_cubic_lattice(n, 1.0);
+
+            let t = Instant::now();
+            let e = lennard_jones_naive(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("Naive: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<4, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("    4: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<8, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("    8: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<16, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("   16: {e} \t\t took {t:?}");
+        }
+        "lennard-jones-par" => {
+            use lennard_jones::*;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            set_threads(&mut args);
+
+            let r = setup_cubic_lattice(n, 1.0);
+
+            let t = Instant::now();
+            let e = lennard_jones::<8, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("  Serial: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones_par::<8, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("Parallel: {e} \t\t took {t:?}");
+        }
+        "lennard-jones-par2" => {
+            use lennard_jones::*;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            set_threads(&mut args);
+
+            let r = setup_cubic_lattice(n, 1.0);
+
+            let t = Instant::now();
+            let e = lennard_jones_par::<4, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("  4: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones_par::<8, _>(1.0, 1.0, &r);
+            let t = t.elapsed();
+
+            println!("  8: {e} \t\t took {t:?}");
         }
         _ => {}
     }
