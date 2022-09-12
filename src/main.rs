@@ -240,6 +240,26 @@ fn main() {
 
             println!("  8: {e} \t\t took {t:?}");
         }
+        "lennard-jones-grad" => {
+            use lennard_jones::*;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            let r = setup_cubic_lattice(n, 1.0);
+            let mut g = vec![[0.0; 3]; n.pow(3)];
+
+            let t = Instant::now();
+            lennard_jones_grad_naive(1.0, 1.0, &mut g, &r);
+            let t = t.elapsed();
+
+            println!("Naive: {:?} \t\t took {t:?}", g[0]);
+
+            let t = Instant::now();
+            lennard_jones_grad::<2, _>(1.0, 1.0, &mut g, &r);
+            let t = t.elapsed();
+
+            println!("    4: {:?} \t\t took {t:?}", g[0]);
+        }
         _ => {}
     }
 }
