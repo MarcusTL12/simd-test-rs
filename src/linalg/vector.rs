@@ -23,7 +23,7 @@ pub fn dot_chunked<const N: usize, T: PrimNum>(v: &[T], w: &[T]) -> T {
 }
 
 unsafe fn to_const_slice<'a, const N: usize, T>(v: &'a [T]) -> &'a [T; N] {
-    unsafe { v.as_chunks_unchecked().get_unchecked(0) }
+    v.as_chunks_unchecked().get_unchecked(0)
 }
 
 pub fn rand_vec<const N: usize, T: PrimNum, R: SampleRange<T> + Clone>(

@@ -216,7 +216,7 @@ pub fn lennard_jones_grad<
     let mut bufs = [[zero; 3]; N];
 
     for (i, ri) in r.iter().enumerate() {
-        let (rcs, rr): (&[[_; N]], _) = r[0..i].as_chunks();
+        let (rcs, _): (&[[_; N]], _) = r[0..i].as_chunks();
 
         let mut bufs2 = [[zero; 3]; N];
 
