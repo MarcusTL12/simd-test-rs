@@ -1,2 +1,2 @@
 [build]
-rustflags = ["-Ctarget-cpu=native", "-Ctarget-feature=-prefer-256-bit,-prefer-128-bit"]
+rustflags = ["-Ctarget-cpu=native"]

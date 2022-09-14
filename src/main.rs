@@ -9,6 +9,7 @@ pub mod linalg;
 pub mod colatz;
 
 pub mod lennard_jones;
+pub mod lennard_jones_t;
 
 fn set_threads(args: &mut Args) -> usize {
     let threads = if let Some(t) = args.next().and_then(|x| x.parse().ok()) {
@@ -259,6 +260,55 @@ fn main() {
             let t = t.elapsed();
 
             println!("    4: {:?} \t\t took {t:?}", g[0]);
+        }
+        "lennard-jones-T" => {
+            use lennard_jones_t::*;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            let [x, y, z] = setup_cubic_lattice(n, 1.0);
+
+            let t = Instant::now();
+            let e = lennard_jones::<1, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("    1: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<2, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("    2: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<4, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("    4: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<8, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("    8: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<16, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("   16: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<32, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("   32: {e} \t\t took {t:?}");
+
+            let t = Instant::now();
+            let e = lennard_jones::<64, _>(1.0, 1.0, &x, &y, &z);
+            let t = t.elapsed();
+
+            println!("   64: {e} \t\t took {t:?}");
         }
         _ => {}
     }
