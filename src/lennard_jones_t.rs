@@ -214,6 +214,10 @@ fn lennard_jones_grad_rest<T: Float + AddAssign + SubAssign>(
             gy[j] += gys;
             gz[j] += gzs;
         }
+
+        gx[i] += gxi;
+        gy[i] += gyi;
+        gz[i] += gzi;
     }
     e
 }
