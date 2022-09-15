@@ -1,7 +1,7 @@
 use std::{
     iter::Sum,
     ops::{Add, AddAssign, Div, Mul, Neg, Sub, SubAssign},
-    simd::{LaneCount, Simd, SimdElement, SupportedLaneCount},
+    simd::{LaneCount, Simd, SimdElement, SupportedLaneCount, SimdFloat},
 };
 
 use num_traits::Float;
@@ -46,16 +46,16 @@ where
 
     let mut e = T::zero();
     for (i, ((xj, yj), zj)) in x.iter().zip(y).zip(z).enumerate() {
-        let xj = Simd::from([*xj; N]);
-        let yj = Simd::from([*yj; N]);
-        let zj = Simd::from([*zj; N]);
+        let xj = Simd::splat(*xj);
+        let yj = Simd::splat(*yj);
+        let zj = Simd::splat(*zj);
 
         let dx = xj - xi;
         let dy = yj - yi;
         let dz = zj - zi;
 
         let r2 = dx * dx + dy * dy + dz * dz;
-        let s2s = Simd::from([s2; N]);
+        let s2s = Simd::splat(s2);
         let sr2 = s2s / r2;
         let sr6 = sr2 * sr2 * sr2;
         let sr12 = sr6 * sr6;
@@ -90,7 +90,10 @@ fn lennard_jones_rest<T: Float + AddAssign>(
     e
 }
 
-pub fn lennard_jones<const N: usize, T: Float + SimdElement + Sum + AddAssign>(
+pub fn lennard_jones<
+    const N: usize,
+    T: Float + SimdElement + Sum + AddAssign,
+>(
     r_eq: T,
     e_b: T,
     x: &[T],
@@ -102,7 +105,8 @@ where
     Simd<T, N>: Add<Output = Simd<T, N>>
         + Sub<Output = Simd<T, N>>
         + Mul<Output = Simd<T, N>>
-        + Div<Output = Simd<T, N>>,
+        + Div<Output = Simd<T, N>>
+        + SimdFloat<Scalar = T>,
 {
     let one = T::one();
     let two = T::from(2.0).unwrap();
@@ -117,18 +121,18 @@ where
     let (zcs, zr): (&[[_; N]], _) = z.as_chunks();
 
     let s2 = two.powf(-one / three) * r_eq.powi(2);
-    let s2s = Simd::from([s2; N]);
+    let s2s = Simd::splat(s2);
 
-    let mut es = Simd::from([T::zero(); N]);
+    let mut es = Simd::splat(T::zero());
     for (i, ((xc, yc), zc)) in xcs.iter().zip(ycs).zip(zcs).enumerate() {
         let xi = Simd::from(*xc);
         let yi = Simd::from(*yc);
         let zi = Simd::from(*zc);
 
         for ((xj, yj), zj) in x.iter().zip(y).zip(z).take(N * i) {
-            let xj = Simd::from([*xj; N]);
-            let yj = Simd::from([*yj; N]);
-            let zj = Simd::from([*zj; N]);
+            let xj = Simd::splat(*xj);
+            let yj = Simd::splat(*yj);
+            let zj = Simd::splat(*zj);
 
             let dx = xj - xi;
             let dy = yj - yi;
@@ -143,7 +147,7 @@ where
         }
     }
 
-    let mut e: T = es.as_array().iter().cloned().sum();
+    let mut e = es.reduce_sum();
 
     for ((xc, yc), zc) in xcs.iter().zip(ycs).zip(zcs) {
         e += lennard_jones_chunk(s2, xc, yc, zc);
@@ -241,7 +245,8 @@ where
         + Sub<Output = Simd<T, N>>
         + Mul<Output = Simd<T, N>>
         + Div<Output = Simd<T, N>>
-        + Neg<Output = Simd<T, N>>,
+        + Neg<Output = Simd<T, N>>
+        + SimdFloat<Scalar = T>,
 {
     let one = T::one();
     let two = T::from(2.0).unwrap();
@@ -249,11 +254,11 @@ where
     let four = T::from(4.0).unwrap();
     let twentyfour = T::from(24.0).unwrap();
 
-    let one_s = Simd::from([one; N]);
-    let two_s = Simd::from([two; N]);
-    let twentyfour_s = Simd::from([twentyfour; N]);
+    let one_s = Simd::splat(one);
+    let two_s = Simd::splat(two);
+    let twentyfour_s = Simd::splat(twentyfour);
 
-    let e_b_s = Simd::from([e_b; N]);
+    let e_b_s = Simd::splat(e_b);
 
     assert_eq!(x.len(), y.len());
     assert_eq!(x.len(), z.len());
@@ -267,14 +272,14 @@ where
     gz.fill(T::zero());
 
     let s2 = two.powf(-one / three) * r_eq.powi(2);
-    let s2s = Simd::from([s2; N]);
+    let s2s = Simd::splat(s2);
 
     let (xcs, xr): (&[[_; N]], _) = x.as_chunks();
     let (ycs, yr): (&[[_; N]], _) = y.as_chunks();
     let (zcs, zr): (&[[_; N]], _) = z.as_chunks();
 
     let mut e = T::zero();
-    let mut es = Simd::from([T::zero(); N]);
+    let mut es = Simd::splat(T::zero());
     for (i, ((xc, yc), zc)) in xcs.iter().zip(ycs).zip(zcs).enumerate() {
         e += lennard_jones_grad_rest(
             s2,
@@ -298,9 +303,9 @@ where
         for (j, ((xj, yj), zj)) in
             x.iter().zip(y).zip(z).enumerate().take(N * i)
         {
-            let xj = Simd::from([*xj; N]);
-            let yj = Simd::from([*yj; N]);
-            let zj = Simd::from([*zj; N]);
+            let xj = Simd::splat(*xj);
+            let yj = Simd::splat(*yj);
+            let zj = Simd::splat(*zj);
 
             let dx = xj - xi;
             let dy = yj - yi;
@@ -323,9 +328,9 @@ where
             gyi -= gys;
             gzi -= gzs;
 
-            gx[j] += gxs.as_array().iter().cloned().sum();
-            gy[j] += gys.as_array().iter().cloned().sum();
-            gz[j] += gzs.as_array().iter().cloned().sum();
+            gx[j] += gxs.reduce_sum();
+            gy[j] += gys.reduce_sum();
+            gz[j] += gzs.reduce_sum();
         }
 
         *unsafe { get_const_slice_mut(gx, i) } = *gxi.as_array();
@@ -333,7 +338,7 @@ where
         *unsafe { get_const_slice_mut(gz, i) } = *gzi.as_array();
     }
 
-    e += es.as_array().iter().cloned().sum();
+    e += es.reduce_sum();
 
     e += lennard_jones_grad_rest(
         s2,
