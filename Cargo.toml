@@ -10,6 +10,7 @@ num-traits = "0.2"
 rand = "0.8"
 rayon = "1.5"
 thread_local = "1.1"
+crossbeam-channel = "0.5"
 
 [profile.release]
 strip = "debuginfo"
