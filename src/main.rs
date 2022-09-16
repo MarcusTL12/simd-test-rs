@@ -170,6 +170,59 @@ fn main() {
         }
         "matmul" => {
             use linalg::matrix::Matrix;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            let t = Instant::now();
+            let a = Matrix::new_rand::<1000003, _>(n, n, -1.0..1.0);
+            let b = Matrix::new_rand::<1000033, _>(n, n, -1.0..1.0);
+            let t = t.elapsed();
+
+            let mut c = Matrix::zeros(n, n);
+
+            println!("Took {t:?} to create rand matrices.");
+
+            let t = Instant::now();
+            a.mul_naive(&b, &mut c);
+            let t = t.elapsed();
+
+            println!(" Naive: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
+
+            let t = Instant::now();
+            a.mul_simd::<2>(&b, &mut c);
+            let t = t.elapsed();
+
+            println!("     2: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
+
+            let t = Instant::now();
+            a.mul_simd::<4>(&b, &mut c);
+            let t = t.elapsed();
+
+            println!("     4: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
+
+            let t = Instant::now();
+            a.mul_simd::<8>(&b, &mut c);
+            let t = t.elapsed();
+
+            println!("     8: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
+
+            let t = Instant::now();
+            a.mul_simd::<16>(&b, &mut c);
+            let t = t.elapsed();
+
+            println!("    16: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
+
+            let t = Instant::now();
+            a.mul_simd::<32>(&b, &mut c);
+            let t = t.elapsed();
+
+            println!("    32: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
+
+            let t = Instant::now();
+            a.mul_simd::<64>(&b, &mut c);
+            let t = t.elapsed();
+
+            println!("    64: {:8.4?} took {t:?}", c[(n / 2, n / 3)]);
         }
         "lennard-jones" => {
             use lennard_jones::*;

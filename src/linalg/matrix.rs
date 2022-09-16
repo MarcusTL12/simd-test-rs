@@ -2,7 +2,8 @@ use super::{primtrait::PrimNum, vector::rand_vec};
 
 use std::{
     fmt::Debug,
-    ops::{AddAssign, Index, IndexMut},
+    ops::{AddAssign, Index, IndexMut, Mul},
+    simd::{LaneCount, Simd, SupportedLaneCount},
 };
 
 use rand::distributions::uniform::SampleRange;
@@ -91,6 +92,42 @@ impl<T: PrimNum> Matrix<T> {
             for j in 0..dest.w {
                 for k in 0..self.w {
                     dest[(i, j)] += self[(i, k)] * rhs[(k, j)];
+                }
+            }
+        }
+    }
+
+    pub fn mul_simd<const N: usize>(&self, rhs: &Self, dest: &mut Self)
+    where
+        LaneCount<N>: SupportedLaneCount,
+        Simd<T, N>: Mul<Output = Simd<T, N>> + AddAssign,
+    {
+        assert_eq!((self.w, self.h, dest.w), (rhs.h, dest.h, rhs.w));
+
+        let n = rhs.w;
+        let l = self.w;
+
+        dest.data.fill(T::zero());
+
+        for (a_row, c_row) in
+            self.data.chunks_exact(l).zip(dest.data.chunks_exact_mut(n))
+        {
+            let (ccs, cr) = c_row.as_chunks_mut::<N>();
+            for (ax, b_row) in a_row.iter().zip(rhs.data.chunks_exact(n)) {
+                let axs = Simd::splat(*ax);
+                let (bcs, br) = b_row.as_chunks::<N>();
+
+                for (bc, cc) in bcs.iter().zip(ccs.iter_mut()) {
+                    let bs = Simd::from(*bc);
+                    let mut cs = Simd::from(*cc);
+
+                    cs += axs * bs;
+
+                    *cc = cs.into();
+                }
+
+                for (bx, cx) in br.iter().zip(cr.iter_mut()) {
+                    *cx += *ax * *bx;
                 }
             }
         }
