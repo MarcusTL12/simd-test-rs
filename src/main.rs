@@ -168,6 +168,9 @@ fn main() {
                 println!("  8192: {d} took {t:?}");
             }
         }
+        "matmul" => {
+            use linalg::matrix::Matrix;
+        }
         "lennard-jones" => {
             use lennard_jones::*;
 
