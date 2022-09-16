@@ -386,6 +386,82 @@ fn main() {
             println!("   64: {e} \t\t took {t:?}");
             println!("gx: {:8.4?}", &gx[0..4]);
         }
+        "lennard-jones-T-grad-par" => {
+            use lennard_jones_t::*;
+
+            let n = args.next().unwrap().parse().unwrap();
+
+            set_threads(&mut args);
+
+            let [x, y, z] = setup_cubic_lattice(n, 1.0);
+            let mut gx = vec![0.0; n.pow(3)];
+            let mut gy = vec![0.0; n.pow(3)];
+            let mut gz = vec![0.0; n.pow(3)];
+            let mut buf = Vec::new();
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<1, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("    1: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<2, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("    2: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<4, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("    4: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<8, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("    8: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<16, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("   16: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<32, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("   32: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+
+            let t = Instant::now();
+            let e = lennard_jones_grad_par::<64, _>(
+                1.0, 1.0, &x, &y, &z, &mut gx, &mut gy, &mut gz, &mut buf,
+            );
+            let t = t.elapsed();
+
+            println!("   64: {e} \t\t took {t:?}");
+            println!("gx: {:8.4?}", &gx[0..4]);
+        }
         _ => {}
     }
 }
