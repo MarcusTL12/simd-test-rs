@@ -614,6 +614,43 @@ fn main() {
 
             assert_eq!(b_naive, b_simd);
         }
+        "transpose-u8-16" => {
+            use transpose_u8::{naive, transpose_64x16_u8};
+            use rand::thread_rng;
+            
+            let n_reps: usize = args.next().unwrap().parse().unwrap();
+
+            const M: usize = 16;
+            const N: usize = 64;
+
+            let mut a = [[0u8; M]; N];
+            let mut b_naive = [[0u8; N]; M];
+
+            let mut rng = thread_rng();
+            for r in &mut a {
+                for x in r {
+                    *x = rng.gen();
+                }
+            }
+
+            let t = Instant::now();
+            for _ in 0..n_reps {
+                naive::trans(&a, &mut b_naive);
+            }
+            let t = t.elapsed();
+            println!("Naive took {t:?}");
+
+            let mut b_simd = [[0u8; N]; M];
+
+            let t = Instant::now();
+            for _ in 0..n_reps {
+                transpose_64x16_u8::trans(&a, &mut b_simd);
+            }
+            let t = t.elapsed();
+            println!(" Simd took {t:?}");
+
+            assert_eq!(b_naive, b_simd);
+        }
         _ => {}
     }
 }
