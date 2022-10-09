@@ -7,6 +7,10 @@ use std::{
 };
 
 use rand::distributions::uniform::SampleRange;
+use rayon::{
+    prelude::{IndexedParallelIterator, ParallelIterator},
+    slice::{ParallelSlice, ParallelSliceMut},
+};
 
 pub struct Matrix<T: PrimNum> {
     pub data: Vec<T>,
@@ -131,6 +135,43 @@ impl<T: PrimNum> Matrix<T> {
                 }
             }
         }
+    }
+
+    pub fn mul_simd_par<const N: usize>(&self, rhs: &Self, dest: &mut Self)
+    where
+        LaneCount<N>: SupportedLaneCount,
+        Simd<T, N>: Mul<Output = Simd<T, N>> + AddAssign,
+    {
+        assert_eq!((self.w, self.h, dest.w), (rhs.h, dest.h, rhs.w));
+
+        let n = rhs.w;
+        let l = self.w;
+
+        dest.data.fill(T::zero());
+
+        self.data
+            .par_chunks_exact(l)
+            .zip(dest.data.par_chunks_exact_mut(n))
+            .for_each(|(a_row, c_row)| {
+                let (ccs, cr) = c_row.as_chunks_mut::<N>();
+                for (ax, b_row) in a_row.iter().zip(rhs.data.chunks_exact(n)) {
+                    let axs = Simd::splat(*ax);
+                    let (bcs, br) = b_row.as_chunks::<N>();
+
+                    for (bc, cc) in bcs.iter().zip(ccs.iter_mut()) {
+                        let bs = Simd::from(*bc);
+                        let mut cs = Simd::from(*cc);
+
+                        cs += axs * bs;
+
+                        *cc = cs.into();
+                    }
+
+                    for (bx, cx) in br.iter().zip(cr.iter_mut()) {
+                        *cx += *ax * *bx;
+                    }
+                }
+            });
     }
 
     pub fn mul_t_naive(&self, rhs: &Self, dest: &mut Self) {

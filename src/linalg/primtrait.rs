@@ -4,11 +4,19 @@ use num_traits::Num;
 use rand::distributions::uniform::SampleUniform;
 
 pub trait PrimNum:
-    Num + Copy + Sum + AddAssign + SampleUniform + SimdElement
+    Num + Copy + Sum + AddAssign + SampleUniform + SimdElement + Send + Sync
 {
 }
 
-impl<T: Num + Copy + Sum + AddAssign + SampleUniform + SimdElement> PrimNum
-    for T
+impl<
+        T: Num
+            + Copy
+            + Sum
+            + AddAssign
+            + SampleUniform
+            + SimdElement
+            + Send
+            + Sync,
+    > PrimNum for T
 {
 }
